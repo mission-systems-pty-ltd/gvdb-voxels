@@ -3474,14 +3474,41 @@ int VolumeGVDB::VoxelizeNode ( Node* node, uchar chan, Matrix4F* xform, float bd
 	return cnt;
 }
 
+/// Insert Edge and Vertex data onto the GPU from the model for voxelization
+/// 
+void VolumeGVDB::InsertModel ( Model* model ){
+	DataPtr* vaux = &mAux[AUX_VERTEX_BUF];
+	DataPtr* eaux = &mAux[AUX_ELEM_BUF];
+
+	cuMemAlloc(&vaux->gpu, model->vertStride * model->vertCount);
+	cuMemcpyHtoD(vaux->gpu, model->vertBuffer, model->vertStride * model->vertCount);
+	vaux->lastEle = model->vertCount;
+	vaux->usedNum = model->vertCount;
+	vaux->stride = model->vertStride;
+	vaux->size = model->vertCount * model->vertStride;
+
+	cuMemAlloc(&eaux->gpu, model->elemStride * model->elemCount);
+	cuMemcpyHtoD(eaux->gpu, model->elemBuffer, model->elemStride * model->elemCount);
+	eaux->lastEle = model->elemCount/3;
+	eaux->usedNum = model->elemCount;
+	eaux->stride = model->elemStride;
+	eaux->size = model->elemCount * model->elemStride;
+
+}
+
+/// Use vertex data from an OpenGL context for Voxelization
+void VolumeGVDB::SolidVoxelizeGl ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, float vthresh ){
+	AuxGeometryMap ( model, AUX_VERTEX_BUF, AUX_ELEM_BUF );					// Setup VBO for CUDA (interop)
+	SolidVoxelize ( chan, model, xform, val_surf, val_inside, vthresh );
+	AuxGeometryUnmap ( model, AUX_VERTEX_BUF, AUX_ELEM_BUF );
+}
+
 // SolidVoxelize - Voxelize a polygonal mesh to a sparse volume
 void VolumeGVDB::SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, float vthresh )
 {
 	PUSH_CTX
 
 	//TimerStart();
-	
-	AuxGeometryMap ( model, AUX_VERTEX_BUF, AUX_ELEM_BUF );					// Setup VBO for CUDA (interop)
 	
 	// Prepare model geometry for use by CUDA
 	cudaCheck ( cuMemcpyHtoD ( cuXform, xform->GetDataF(), sizeof(float)*16), "VolumeGVDB", "SolidVoxelize", "cuMemcpyHtoD", "cuXform", mbDebug );	// Send transform
@@ -3532,8 +3559,6 @@ void VolumeGVDB::SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, floa
 	#ifdef VOX_GL
 		PrepareV3D ( Vector3DI(0,0,0), 0 );
 	#endif
-
-	AuxGeometryUnmap ( model, AUX_VERTEX_BUF, AUX_ELEM_BUF );
 
 	POP_CTX
 	//float msec = TimerStop();

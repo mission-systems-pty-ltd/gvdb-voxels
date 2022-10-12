@@ -176,7 +176,7 @@ bool Sample::init()
 	xform.SRT ( Vector3DF(1,0,0), Vector3DF(0,1,0), Vector3DF(0,0,1), Vector3DF(200,200,200), part_size );
 	Model* m = gvdb.getScene()->getModel(0);
 
-	gvdb.SolidVoxelize ( 0, m, &xform, 1, 1 );		// polygons to voxels
+	gvdb.SolidVoxelizeGl ( 0, m, &xform, 1, 1 );		// polygons to voxels
 
 	// Fill color channel	
 	gvdb.FillChannel ( 1, Vector4DF(0.7f, 0.7f, 0.7f, 1) );

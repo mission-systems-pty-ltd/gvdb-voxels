@@ -493,6 +493,7 @@
 			// Voxelization
 			Extents ComputeExtents ( Node* node );
 			Extents ComputeExtents ( int lev, Vector3DF obj_min, Vector3DF obj_max );			
+			void SolidVoxelizeGl ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, float vthresh=0.0 );
 			void SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, float vthresh=0.0 );
 			int VoxelizeNode ( Node* node, uchar chan, Matrix4F* xform, float bdiv, float val_surf, float val_inside, float vthresh = 0.0);
 			int ActivateRegion ( int lev, Extents& e );
@@ -539,7 +540,8 @@
 			char* getDataCPU ( DataPtr ptr, int n, int stride );
 			void PrefixSum ( CUdeviceptr outArray, CUdeviceptr inArray, int numElements );
 			void SetPoints ( DataPtr& pntpos, DataPtr& pntvel, DataPtr& clrpos );
-			void InsertPoints ( int num_pnts, Vector3DF trans, bool bPrefix=false );					
+			void InsertPoints ( int num_pnts, Vector3DF trans, bool bPrefix=false );
+			void InsertModel ( Model* model );
 			Vector3DI InsertTriangles ( Model* model, Matrix4F* xform, float& ydiv );
 
 			void SetSupportPoints ( DataPtr& pntpos, DataPtr& dirpos );
