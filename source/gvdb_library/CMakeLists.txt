@@ -296,7 +296,7 @@ foreach(_FILE ${GVDB_PTX_SOURCE_FILES})
 	string(REPLACE "." "_" _MACRO ${_FILE})     # cuda_gvdb_copydata_ptx
 	string(TOUPPER ${_MACRO} _MACRO) # Yep, this goes input, then output!
 	target_compile_definitions(gvdb PUBLIC
-		${_MACRO}="${_FILE}")
+		${_MACRO}="${GVDB_PTX_INSTALL_PREFIX}/objects/gvdbPTX/kernels/${_FILE}")
 endforeach()
 
 # Finally, make our targets importable from the build directory.
@@ -354,3 +354,5 @@ get_target_property(TEMP_INTERFACE_SOURCES gvdb INTERFACE_SOURCES)
 install(FILES ${TEMP_INTERFACE_SOURCES} DESTINATION ${INCLUDE_INSTALL_PATH})
 get_target_property(TEMP_INTERFACE_SOURCES gvdbPTX INTERFACE_SOURCES)
 install(FILES ${TEMP_INTERFACE_SOURCES} DESTINATION ${INCLUDE_INSTALL_PATH})
+
+install(TARGETS gvdbPTX DESTINATION ${GVDB_PTX_INSTALL_PREFIX})
