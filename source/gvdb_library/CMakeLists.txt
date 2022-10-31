@@ -289,6 +289,13 @@ target_compile_definitions(gvdb PUBLIC GLEW_STATIC)
 target_sources(gvdb PRIVATE ${GLEW_SOURCE})
 target_include_directories(gvdb PRIVATE ${GLEW_INCLUDE_DIR})
 
+if(NOT DEFINED GVDB_PTX_INSTALL_PREFIX)
+  set(GVDB_PTX_INSTALL_PREFIX "")
+else()
+    # The macro requires the additional path suffix that is automatically added by the ptx target install method.
+    set(GVDB_PTX_INSTALL_PREFIX_MACRO "${GVDB_PTX_INSTALL_PREFIX}/objects/gvdbPTX/kernels/")
+endif(NOT DEFINED GVDB_PTX_INSTALL_PREFIX)
+
 # Allow GVDB to use e.g. CUDA_GVDB_COPYDATA as a macro for "cuda_gvdb_copydata.ptx"
 foreach(_FILE ${GVDB_PTX_SOURCE_FILES})
 	get_filename_component(_FILE ${_FILE} NAME) # cuda_gvdb_copydata.cu
@@ -296,7 +303,7 @@ foreach(_FILE ${GVDB_PTX_SOURCE_FILES})
 	string(REPLACE "." "_" _MACRO ${_FILE})     # cuda_gvdb_copydata_ptx
 	string(TOUPPER ${_MACRO} _MACRO) # Yep, this goes input, then output!
 	target_compile_definitions(gvdb PUBLIC
-		${_MACRO}="${GVDB_PTX_INSTALL_PREFIX}/objects/gvdbPTX/kernels/${_FILE}")
+		${_MACRO}="${GVDB_PTX_INSTALL_PREFIX_MACRO}${_FILE}")
 endforeach()
 
 # Finally, make our targets importable from the build directory.
