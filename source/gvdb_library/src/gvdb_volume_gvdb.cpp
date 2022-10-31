@@ -3497,16 +3497,12 @@ void VolumeGVDB::InsertModel ( Model* model ){
 }
 
 /// Use vertex data from an OpenGL context for Voxelization
-void VolumeGVDB::SolidVoxelizeGl ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, float vthresh ){
-	AuxGeometryMap ( model, AUX_VERTEX_BUF, AUX_ELEM_BUF );					// Setup VBO for CUDA (interop)
-	SolidVoxelize ( chan, model, xform, val_surf, val_inside, vthresh );
-	AuxGeometryUnmap ( model, AUX_VERTEX_BUF, AUX_ELEM_BUF );
-}
 
 // SolidVoxelize - Voxelize a polygonal mesh to a sparse volume
-void VolumeGVDB::SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, float vthresh )
+void VolumeGVDB::SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, bool activate, float vthresh, bool use_gl )
 {
 	PUSH_CTX
+	if(use_gl) AuxGeometryMap ( model, AUX_VERTEX_BUF, AUX_ELEM_BUF );					// Setup VBO for CUDA (interop)
 
 	//TimerStart();
 	
@@ -3560,6 +3556,7 @@ void VolumeGVDB::SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, floa
 		PrepareV3D ( Vector3DI(0,0,0), 0 );
 	#endif
 
+	if(use_gl) AuxGeometryUnmap ( model, AUX_VERTEX_BUF, AUX_ELEM_BUF );
 	POP_CTX
 	//float msec = TimerStop();
 	//verbosef( "Voxelize Complete: %4.2f\n", msec );
