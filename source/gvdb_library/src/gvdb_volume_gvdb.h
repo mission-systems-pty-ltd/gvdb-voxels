@@ -404,8 +404,8 @@
 			void SetupAtlasAccess ();
 			void FinishTopology (bool pCommitPool = true, bool pComputeBounds = true);						
 			void UpdateAtlas ();
-			void UpdateApron ();
-			void UpdateApron ( uchar chan, float boundval = 0.0f, bool changeCtx = true );
+			void UpdateApron (bool activate=true);
+			void UpdateApron ( uchar chan, bool activate = true, float boundval = 0.0f, bool changeCtx = true );
 			void UpdateApronFaces(uchar chan);
 			void SetColorChannel ( uchar chan );
 			// API-facing version of Allocator::AtlasRetrieveBrickXYZ.
@@ -541,7 +541,7 @@
 			void SetPoints ( DataPtr& pntpos, DataPtr& pntvel, DataPtr& clrpos );
 			void InsertPoints ( int num_pnts, Vector3DF trans, bool bPrefix=false );
 			void InsertModel ( Model* model );
-			Vector3DI InsertTriangles ( Model* model, Matrix4F* xform, float& ydiv );
+			Vector3DI InsertTriangles ( Model* model, Matrix4F* xform, float& ydiv, bool activate = true );
 
 			void SetSupportPoints ( DataPtr& pntpos, DataPtr& dirpos );
 			void InsertSupportPoints ( int num_pnts, float offset, Vector3DF trans, bool bPrefix=false );

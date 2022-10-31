@@ -3517,12 +3517,15 @@ void VolumeGVDB::SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, floa
 	mVoxRes = mVoxMax; mVoxRes -= mVoxMin;
 
 	// VDB Hierarchical Rasterization	
-	Clear ();									// creates a new root	
+	// Clear ();									// creates a new root	
 
 	// Voxelize all nodes in bounding box at starting level		
 	int N = mPool->getNumLevels ();
 	Extents e = ComputeExtents ( N, mObjMin, mObjMax );			// start - level N
-	ActivateRegion ( N-1, e );									// activate - level N-1
+	if(activate){
+		std::cerr << "HEYA I AM ACTIVATING NOW " << std::endl;
+		ActivateRegion ( N-1, e );									// activate - level N-1
+	}
 	#ifdef VOX_GL
 		PrepareV3D ( Vector3DI(8,8,8), 0 );
 	#endif
@@ -3535,7 +3538,7 @@ void VolumeGVDB::SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, floa
 		cnt = 0;		
 		// Insert triangles into bins
 		float ydiv = getCover(lev).y;							// use brick boundaries for triangle sorting
-		Vector3DI tcnts = InsertTriangles ( model, xform, ydiv );
+		Vector3DI tcnts = InsertTriangles ( model, xform, ydiv, activate );
 
 		// Voxelize each node at this level
 		for (int n = 0; n < node_cnt; n++ ) {					// get each node at current
@@ -3550,7 +3553,7 @@ void VolumeGVDB::SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, floa
 	}	
 
 	// Update apron
-	UpdateApron ();		
+	UpdateApron (activate);		
 
 	#ifdef VOX_GL
 		PrepareV3D ( Vector3DI(0,0,0), 0 );
@@ -3563,10 +3566,13 @@ void VolumeGVDB::SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, floa
 }
 
 // Insert triangles into auxiliary bins
-Vector3DI VolumeGVDB::InsertTriangles ( Model* model, Matrix4F* xform, float& ydiv )
+Vector3DI VolumeGVDB::InsertTriangles ( Model* model, Matrix4F* xform, float& ydiv, bool activate )
 {
 	PUSH_CTX
 
+	if(!activate){
+		std::cerr << "NOT ACtivated!!!!!" << std::endl;
+	}
 	// Identify model bounding box
 	model->ComputeBounds ( *xform, 0.1f );	
 	int ybins = int(model->objMax.y / ydiv)+1;						// y divisions align with lev0 brick boundaries	
@@ -4430,14 +4436,14 @@ void VolumeGVDB::Raytrace ( DataPtr rays, uchar chan, char shading, int frame, f
 }
 
 // Update apron (for all channels)
-void VolumeGVDB::UpdateApron ()
+void VolumeGVDB::UpdateApron (bool activate)
 {
 	for (int n=0; n < mPool->getNumAtlas(); n++ )
-		UpdateApron ( n );	// only update marker channel
+		UpdateApron ( n, activate );	// only update marker channel
 }
 
 // Update apron (one channel)
-void VolumeGVDB::UpdateApron ( uchar chan, float boundval, bool changeCtx)
+void VolumeGVDB::UpdateApron ( uchar chan, bool activate, float boundval, bool changeCtx)
 { 	
 	if ( mApron == 0 ) return;	
 	
@@ -4470,10 +4476,12 @@ void VolumeGVDB::UpdateApron ( uchar chan, float boundval, bool changeCtx)
 	Vector3DI grid(threadcnt.x, (threadcnt.y + block.y - 1) / block.y, (threadcnt.y + block.z - 1) / block.z);
 	
 	// Note: Kernels currently assume apron size of 1.
-	void* args[6] = { &cuVDBInfo, &chan, &bricks, &brickres, &brickwid, &boundval };
-	cudaCheck(cuLaunchKernel(cuFunc[kern], grid.x, grid.y, grid.z, block.x, block.y, block.z, 0, NULL, args, NULL), 
-				"VolumeGVDB", "UpdateApron", "cuLaunch", typ, mbDebug);
-
+	if(activate){
+		std::cerr << " APRON UPDATE TYPE  = " << typ << std::endl;
+		void* args[6] = { &cuVDBInfo, &chan, &bricks, &brickres, &brickwid, &boundval };
+		cudaCheck(cuLaunchKernel(cuFunc[kern], grid.x, grid.y, grid.z, block.x, block.y, block.z, 0, NULL, args, NULL), 
+					"VolumeGVDB", "UpdateApron", "cuLaunch", typ, mbDebug);
+	}
 
 	if (changeCtx) { POP_CTX }
 }
