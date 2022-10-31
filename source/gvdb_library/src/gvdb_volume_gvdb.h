@@ -493,8 +493,7 @@
 			// Voxelization
 			Extents ComputeExtents ( Node* node );
 			Extents ComputeExtents ( int lev, Vector3DF obj_min, Vector3DF obj_max );			
-			void SolidVoxelizeGl ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, float vthresh=0.0 );
-			void SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, float vthresh=0.0 );
+			void SolidVoxelize ( uchar chan, Model* model, Matrix4F* xform, float val_surf, float val_inside, bool activate=true, float vthresh=0.0, bool use_gl=true );
 			int VoxelizeNode ( Node* node, uchar chan, Matrix4F* xform, float bdiv, float val_surf, float val_inside, float vthresh = 0.0);
 			int ActivateRegion ( int lev, Extents& e );
 			int ActivateRegionFromAux(Extents& e, int auxid, uchar dt, float vthresh);

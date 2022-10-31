@@ -125,7 +125,7 @@ void Sample::revoxelize()
 	// Converts polygons-to-voxels using the GPU	
 	Model* model = gvdb1.getScene()->getModel(0);
 
-	gvdb1.SolidVoxelizeGl(0, model, &xform, 1.0, 0.5);
+	gvdb1.SolidVoxelize(0, model, &xform, 1.0, 0.5);
 
 	gvdb1.Measure(true);
 
