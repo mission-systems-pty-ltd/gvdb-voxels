@@ -615,6 +615,6 @@ __device__ void rayCastTemplate ( VDBInfo* gvdb, K chan, float3 pos, float3 dir,
 __device__ void rayCast ( VDBInfo* gvdb, uchar chan, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, gvdbBrickFunc_t brickFunc ){
 	rayCastTemplate<gvdbBrickFunc_t,char>(gvdb, chan, pos, dir, hit, norm, clr, brickFunc );
 }
-__device__ void rayCast ( VDBInfo* gvdb, uchar* chan, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, gvdbBrickIOFunc_t brickFunc ){
+__device__ void rayCast ( VDBInfo* gvdb, uchar* chan, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, gvdbMultiChanBrickFunc_t brickFunc ){
 	rayCastTemplate<gvdbMultiChanBrickFunc_t,uchar*>(gvdb, chan, pos, dir, hit, norm, clr, brickFunc );
 }
