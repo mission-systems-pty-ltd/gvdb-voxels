@@ -18,8 +18,8 @@
 //-----------------------------------------------
 
 // gvdbBrickFunc ( gvdb, channel, nodeid, t, pos, dir, hit, norm, clr )
-typedef void(*gvdbBrickFunc_t)( VDBInfo*,   uchar,  int, float3, float3, float3, float3&, float3&, float4& );
-typedef void(*gvdbMultiChanBrickFunc_t)( VDBInfo*, uchar*, int, float3, float3, float3, float3&, float3&, float4& );
+typedef void(*gvdbBrickFunc_t)( VDBInfo*,   uchar,  int, float3, float3, float3, float3&, float3&, float4&, uchar );
+typedef void(*gvdbMultiChanBrickFunc_t)( VDBInfo*, uchar*, int, float3, float3, float3, float3&, float3&, float4&, uchar );
 
 static const int MAXLEV = 5;
 static const int MAX_ITER = 256;
@@ -225,7 +225,7 @@ inline __device__ float4 getColorF ( VDBInfo* gvdb, uchar chan, float3 p )
 //   `hit`: If hit.z == NOHIT, no intersection; otherwise, the coordinates of the intersection
 //   `norm`: The normal at the intersection
 //   `hclr`: The color of the color channel at the intersection point.
-__device__ void raySurfaceVoxelBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& hclr )
+__device__ void raySurfaceVoxelBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& hclr, uchar num_chan )
 {
 	float3 vmin;
 	VDBNode* node	= getNode ( gvdb, 0, nodeid, &vmin );				// Get the VDB leaf node
@@ -279,7 +279,7 @@ __device__ void raySurfaceVoxelBrick ( VDBInfo* gvdb, uchar chan, int nodeid, fl
 //   `hit`: If hit.z == NOHIT, no intersection; otherwise, the coordinates of the intersection
 //   `norm`: The normal at the intersection
 //   `hclr`: The color of the color channel at the intersection point.
-__device__ void raySurfaceTrilinearBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& hclr )
+__device__ void raySurfaceTrilinearBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& hclr, uchar num_chan )
 {
 	float3 vmin;
 	VDBNode* node	= getNode ( gvdb, 0, nodeid, &vmin );	// Get the VDB leaf node	
@@ -314,7 +314,7 @@ __device__ void raySurfaceTrilinearBrick ( VDBInfo* gvdb, uchar chan, int nodeid
 //   `hit`: If hit.z == NOHIT, no intersection; otherwise, the coordinates of the intersection
 //   `norm`: The normal at the intersection
 //   `hclr`: The color of the color channel at the intersection point.
-__device__ void raySurfaceTricubicBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& hclr )
+__device__ void raySurfaceTricubicBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& hclr, uchar num_chan )
 {
 	float3 vmin;
 	VDBNode* node	= getNode ( gvdb, 0, nodeid, &vmin );			// Get the VDB leaf node	
@@ -387,7 +387,7 @@ inline __device__ float getRayDepthBufferMax(const float3& rayDir) {
 //   `hit`: If hit.z == NOHIT, no intersection; otherwise, the coordinates of the intersection
 //   `norm`: The normal at the intersection
 //   `hclr`: The color of the color channel at the intersection point
-__device__ void rayLevelSetBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& hclr )
+__device__ void rayLevelSetBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& hclr, uchar num_chan )
 {
 	float3 vmin;
 	VDBNode* node	= getNode ( gvdb, 0, nodeid, &vmin );			// Get the VDB leaf node	
@@ -422,7 +422,7 @@ __device__ void rayLevelSetBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3
 //   `hit`: The coordinates of the intersection
 //   `norm`: Unused
 //   `hclr`: Unused
-__device__ void rayEmptySkipBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr )
+__device__ void rayEmptySkipBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, uchar num_chan=1 )
 {
 	hit = pos + t.x * dir; // Return brick hit
 }
@@ -443,7 +443,7 @@ __device__ void rayEmptySkipBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float
 //   `hit`: Unused
 //   `norm`: Unused
 //   `clr`: Accumulated color and transparency along the ray.
-__device__ void rayShadowBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr )
+__device__ void rayShadowBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, uchar num_chan=1 )
 {
 	float3 vmin;
 	VDBNode* node = getNode ( gvdb, 0, nodeid, &vmin );			// Get the VDB leaf node	
@@ -483,7 +483,7 @@ __device__ void rayShadowBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t
 //   `hit.z`: 0 if ray passed through entire brick, 1 if intersected with depth buffer.
 //   `norm`: Unused
 //   `clr`: Accumulated color and transparency along the ray.
-__device__ void rayDeepBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr )
+__device__ void rayDeepBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, uchar num_chan=1 )
 {
 	float3 vmin;
 	VDBNode* node = getNode ( gvdb, 0, nodeid, &vmin );		// Get the VDB leaf node		
@@ -542,7 +542,7 @@ __device__ void rayDeepBrick ( VDBInfo* gvdb, uchar chan, int nodeid, float3 t, 
 // 4. Returns a color and/or surface hit and normal
 //
 template<typename T, typename K>
-__device__ void rayCastTemplate ( VDBInfo* gvdb, K chan, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, T brickFunc )
+__device__ void rayCastTemplate ( VDBInfo* gvdb, K chan, uchar num_chan, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, T brickFunc )
 {
 	int		nodeid[MAXLEV];					// level variables
 	float	tMax[MAXLEV];
@@ -582,7 +582,7 @@ __device__ void rayCastTemplate ( VDBInfo* gvdb, K chan, float3 pos, float3 dir,
 			if ( lev == 1 ) {										// enter brick function..
 				nodeid[0] = getChild ( gvdb, node, b ); 
 				dda.t.x += gvdb->epsilon;
-				(*brickFunc) (gvdb, chan, nodeid[0], dda.t, pos, dir, hit, norm, clr);
+				(*brickFunc) (gvdb, chan, nodeid[0], dda.t, pos, dir, hit, norm, clr, num_chan);
 				if ( clr.w <= 0) {
 					clr.w = 0; 
 					return; 
@@ -600,7 +600,7 @@ __device__ void rayCastTemplate ( VDBInfo* gvdb, K chan, float3 pos, float3 dir,
 			}
 		} else {
 			// empty voxel, step DDA
-			dda.Step();
+			dda.Step(); 
 		}
 		while ( dda.t.x > tMax[lev] && lev <= gvdb->top_lev ) {
 			lev++;												// step up tree
@@ -613,8 +613,9 @@ __device__ void rayCastTemplate ( VDBInfo* gvdb, K chan, float3 pos, float3 dir,
 }
 
 __device__ void rayCast ( VDBInfo* gvdb, uchar chan, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, gvdbBrickFunc_t brickFunc ){
-	rayCastTemplate<gvdbBrickFunc_t,char>(gvdb, chan, pos, dir, hit, norm, clr, brickFunc );
+	rayCastTemplate<gvdbBrickFunc_t,char>(gvdb, chan, (uint) 1, pos, dir, hit, norm, clr, brickFunc );
 }
-__device__ void rayCast ( VDBInfo* gvdb, uchar* chan, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, gvdbMultiChanBrickFunc_t brickFunc ){
-	rayCastTemplate<gvdbMultiChanBrickFunc_t,uchar*>(gvdb, chan, pos, dir, hit, norm, clr, brickFunc );
+
+__device__ void rayCast ( VDBInfo* gvdb, uchar* chan, uchar num_chan, float3 pos, float3 dir, float3& hit, float3& norm, float4& clr, gvdbMultiChanBrickFunc_t brickFunc ){
+	rayCastTemplate<gvdbMultiChanBrickFunc_t,uchar*>(gvdb, chan, num_chan, pos, dir, hit, norm, clr, brickFunc );
 }
