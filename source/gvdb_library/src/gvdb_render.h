@@ -6,7 +6,7 @@
 // Version 1.0: Rama Hoetzlein, 5/1/2017
 // Version 1.1: Rama Hoetzlein, 3/25/2018
 //-----------------------------------------------------------------------------
-
+#pragma once 
 #include "gvdb_vec.h"
 #include "gvdb_scene.h"
 using namespace nvdb;
