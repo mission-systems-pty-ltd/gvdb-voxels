@@ -76,9 +76,22 @@ struct HDDAState {
 
 	// Compute the next time step and direction from DDA, but don't step yet.
 	__device__ void Next() {
-		mask.x = int((tSide.x < tSide.y) & (tSide.x <= tSide.z));
-		mask.y = int((tSide.y < tSide.z) & (tSide.y <= tSide.x));
-		mask.z = int((tSide.z < tSide.x) & (tSide.z <= tSide.y));
+		/// Handles div by 0 cases (i.e. when we are tracing along an axis.)
+		if( !isfinite( tSide.y ) && !isfinite( tSide.z ) && isfinite( tSide.x ) ){ mask.x = 1; }
+		else if( !isfinite( tSide.y ) && isfinite( tSide.z ) && isfinite( tSide.x ) ){ mask.x = int((tSide.x <= tSide.z)); }
+		else if( isfinite( tSide.y ) && !isfinite( tSide.z ) && isfinite( tSide.x ) ){ mask.x = int((tSide.x < tSide.y)); }
+		else{ mask.x = int((tSide.x < tSide.y) & (tSide.x <= tSide.z)); }
+
+		if( !isfinite( tSide.x ) && !isfinite( tSide.z ) && isfinite( tSide.y ) ){ mask.y = 1; }
+		else if( isfinite( tSide.x ) && !isfinite( tSide.z ) && isfinite( tSide.y ) ){ mask.y = int((tSide.y <= tSide.x)); }
+		else if( !isfinite( tSide.x ) && isfinite( tSide.z ) && isfinite( tSide.y ) ){ mask.y = int((tSide.y < tSide.z)); }
+		else{ mask.y = int((tSide.y < tSide.z) & (tSide.y <= tSide.x)); }
+
+		if( !isfinite( tSide.x ) && !isfinite( tSide.y ) && isfinite( tSide.z ) ){ mask.z = 1;	 }
+		else if( isfinite( tSide.x ) && !isfinite( tSide.y ) && isfinite( tSide.z ) ){ mask.z = int((tSide.z < tSide.x)); }
+		else if( !isfinite( tSide.x ) && isfinite( tSide.y ) && isfinite( tSide.z ) ){ mask.z = int((tSide.z <= tSide.y)); }
+		else{ mask.z = int((tSide.z < tSide.x) & (tSide.z <= tSide.y)); }
+
 		t.y = mask.x ? tSide.x : (mask.y ? tSide.y : tSide.z);
 	}
 
