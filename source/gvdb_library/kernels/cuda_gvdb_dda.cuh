@@ -54,6 +54,9 @@ struct HDDAState {
 		pos = startPos;
 		dir = startDir;
 		pStep = isign3(dir);
+        pStep.x = (dir.x == 0) ? 0 : pStep.x;
+        pStep.y = (dir.y == 0) ? 0 : pStep.y;
+        pStep.z = (dir.z == 0) ? 0 : pStep.z;
 		t = startT;
 	}
 
@@ -73,25 +76,24 @@ struct HDDAState {
 		tSide = ((floor3(pFlt) - pFlt + 0.5f) * make_float3(pStep) + 0.5) * tDel;
 		p = make_int3(floor3(pFlt));
 	}
+	
+	__device__ int chooseMaskValue(float tSideA, float tSideB, float tSideC) {
+		if (!isfinite(tSideA) && !isfinite(tSideB) && isfinite(tSideC)) {
+			return 1;
+		} else if (isfinite(tSideA) && !isfinite(tSideB) && isfinite(tSideC)) {
+			return (tSideC < tSideA);
+		} else if (!isfinite(tSideA) && isfinite(tSideB) && isfinite(tSideC)) {
+			return (tSideC <= tSideB);
+		} else {
+			return (tSideC < tSideA) & (tSideC <= tSideB);
+		}
+	}
 
 	// Compute the next time step and direction from DDA, but don't step yet.
 	__device__ void Next() {
-		/// Handles div by 0 cases (i.e. when we are tracing along an axis.)
-		if( !isfinite( tSide.y ) && !isfinite( tSide.z ) && isfinite( tSide.x ) ){ mask.x = 1; }
-		else if( !isfinite( tSide.y ) && isfinite( tSide.z ) && isfinite( tSide.x ) ){ mask.x = int((tSide.x <= tSide.z)); }
-		else if( isfinite( tSide.y ) && !isfinite( tSide.z ) && isfinite( tSide.x ) ){ mask.x = int((tSide.x < tSide.y)); }
-		else{ mask.x = int((tSide.x < tSide.y) & (tSide.x <= tSide.z)); }
-
-		if( !isfinite( tSide.x ) && !isfinite( tSide.z ) && isfinite( tSide.y ) ){ mask.y = 1; }
-		else if( isfinite( tSide.x ) && !isfinite( tSide.z ) && isfinite( tSide.y ) ){ mask.y = int((tSide.y <= tSide.x)); }
-		else if( !isfinite( tSide.x ) && isfinite( tSide.z ) && isfinite( tSide.y ) ){ mask.y = int((tSide.y < tSide.z)); }
-		else{ mask.y = int((tSide.y < tSide.z) & (tSide.y <= tSide.x)); }
-
-		if( !isfinite( tSide.x ) && !isfinite( tSide.y ) && isfinite( tSide.z ) ){ mask.z = 1;	 }
-		else if( isfinite( tSide.x ) && !isfinite( tSide.y ) && isfinite( tSide.z ) ){ mask.z = int((tSide.z < tSide.x)); }
-		else if( !isfinite( tSide.x ) && isfinite( tSide.y ) && isfinite( tSide.z ) ){ mask.z = int((tSide.z <= tSide.y)); }
-		else{ mask.z = int((tSide.z < tSide.x) & (tSide.z <= tSide.y)); }
-
+		mask.x = chooseMaskValue(tSide.y, tSide.z, tSide.x);
+		mask.y = chooseMaskValue(tSide.x, tSide.z, tSide.y);
+		mask.z = chooseMaskValue(tSide.x, tSide.y, tSide.z);
 		t.y = mask.x ? tSide.x : (mask.y ? tSide.y : tSide.z);
 	}
 
