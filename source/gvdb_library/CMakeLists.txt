@@ -289,8 +289,12 @@ target_compile_definitions(gvdb PUBLIC GLEW_STATIC)
 target_sources(gvdb PRIVATE ${GLEW_SOURCE})
 target_include_directories(gvdb PRIVATE ${GLEW_INCLUDE_DIR})
 
-set(GVDB_PTX_INSTALL_PREFIX "" CACHE PATH "path prefix to GVDB PTX kernels" )
-set(GVDB_PTX_INSTALL_PREFIX_MACRO "${GVDB_PTX_INSTALL_PREFIX}/objects/gvdbPTX/kernels/")
+if(NOT DEFINED GVDB_PTX_INSTALL_PREFIX)
+  set(GVDB_PTX_INSTALL_PREFIX "")
+else()
+    # The macro requires the additional path suffix that is automatically added by the ptx target install method.
+    set(GVDB_PTX_INSTALL_PREFIX_MACRO "${GVDB_PTX_INSTALL_PREFIX}/objects/gvdbPTX/kernels/")
+endif(NOT DEFINED GVDB_PTX_INSTALL_PREFIX)
 
 # Allow GVDB to use e.g. CUDA_GVDB_COPYDATA as a macro for "cuda_gvdb_copydata.ptx"
 foreach(_FILE ${GVDB_PTX_SOURCE_FILES})
