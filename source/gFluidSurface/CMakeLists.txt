@@ -130,4 +130,6 @@ add_custom_command(OUTPUT copiedGVDB.stamp
 
 # Optionally, install the application into the BIN_INSTALL_PATH set by gvdb_library's CMakeLists.
 get_filename_component(BIN_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/bin REALPATH)
-install(DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME_APP}>/" DESTINATION ${BIN_INSTALL_PATH} FILES_MATCHING PATTERN "*.dll" PATTERN "*.glsl" PATTERN "*.ptx" PATTERN "*.so" PATTERN "*.exe" REGEX "/[^.]+$")
+get_filename_component(LIB_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/lib REALPATH)
+install(DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>/" DESTINATION ${BIN_INSTALL_PATH} FILES_MATCHING PATTERN "*.dll" PATTERN "*.glsl" PATTERN "*.exe" REGEX "/[^.]+$")
+install(DIRECTORY "$<TARGET_FILE_DIR:${PROJECT_NAME}>/" DESTINATION ${LIB_INSTALL_PATH} FILES_MATCHING PATTERN "*.ptx" PATTERN "*.so" )

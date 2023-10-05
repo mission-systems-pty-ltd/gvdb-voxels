@@ -289,12 +289,8 @@ target_compile_definitions(gvdb PUBLIC GLEW_STATIC)
 target_sources(gvdb PRIVATE ${GLEW_SOURCE})
 target_include_directories(gvdb PRIVATE ${GLEW_INCLUDE_DIR})
 
-if(NOT DEFINED GVDB_PTX_INSTALL_PREFIX)
-  set(GVDB_PTX_INSTALL_PREFIX "")
-else()
-    # The macro requires the additional path suffix that is automatically added by the ptx target install method.
-    set(GVDB_PTX_INSTALL_PREFIX_MACRO "${GVDB_PTX_INSTALL_PREFIX}/objects/gvdbPTX/kernels/")
-endif(NOT DEFINED GVDB_PTX_INSTALL_PREFIX)
+set(GVDB_PTX_INSTALL_PREFIX "" CACHE PATH "path prefix to GVDB PTX kernels" )
+set(GVDB_PTX_INSTALL_PREFIX_MACRO "${GVDB_PTX_INSTALL_PREFIX}/objects/gvdbPTX/kernels/")
 
 # Allow GVDB to use e.g. CUDA_GVDB_COPYDATA as a macro for "cuda_gvdb_copydata.ptx"
 foreach(_FILE ${GVDB_PTX_SOURCE_FILES})
@@ -355,10 +351,13 @@ get_filename_component(BIN_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/bin REALPATH)
 get_filename_component(INCLUDE_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/include REALPATH)
 get_filename_component(LIB_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/lib REALPATH)
 
-install(DIRECTORY "$<TARGET_FILE_DIR:gvdb>/" DESTINATION ${BIN_INSTALL_PATH} FILES_MATCHING PATTERN "*.dll" PATTERN "*.glsl" PATTERN "*.ptx" PATTERN "*.so")
+# libraries etc.
+install(DIRECTORY "$<TARGET_FILE_DIR:gvdb>/" DESTINATION ${LIB_INSTALL_PATH} FILES_MATCHING PATTERN "*.dll" PATTERN "*.glsl" PATTERN "*.ptx" PATTERN "*.so")
 install(DIRECTORY "$<TARGET_FILE_DIR:gvdb>/" DESTINATION ${LIB_INSTALL_PATH} FILES_MATCHING PATTERN "*.lib" PATTERN "*.exp" PATTERN "*.ilk" PATTERN "*.pdb")
+# .h files for gvdb
 get_target_property(TEMP_INTERFACE_SOURCES gvdb INTERFACE_SOURCES)
 install(FILES ${TEMP_INTERFACE_SOURCES} DESTINATION ${INCLUDE_INSTALL_PATH})
+# .h (cuh) files for gvdbPTX
 get_target_property(TEMP_INTERFACE_SOURCES gvdbPTX INTERFACE_SOURCES)
 install(FILES ${TEMP_INTERFACE_SOURCES} DESTINATION ${INCLUDE_INSTALL_PATH})
 
