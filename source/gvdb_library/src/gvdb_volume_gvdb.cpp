@@ -227,6 +227,13 @@ void VolumeGVDB::SetDebug ( bool d )
 // Loads a CUDA function into memory from ptx file
 void VolumeGVDB::LoadFunction ( int fid, std::string func, int mid, std::string ptx )
 {
+	// assert file exists
+	FILE* fp = fopen ( ptx.c_str(), "rb" );
+	if ( fp == 0x0 ) {
+		gprintf ( "ERROR: LoadFunction, cannot find file: %s\n", ptx.c_str() );
+		gerror ();
+	}
+
 	char cptx[512];		strcpy ( cptx, ptx.c_str() );
 	char cfn[512];		strcpy ( cfn, func.c_str() );
 

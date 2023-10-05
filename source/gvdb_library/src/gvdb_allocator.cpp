@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <cuda_runtime.h>
 #include <cuda.h>
+#include <fstream>
 
 using namespace nvdb;
 
@@ -33,6 +34,8 @@ Allocator::Allocator ()
 	mbDebug = false;
 	mVFBO[0] = -1;
 
+	std::ifstream file(CUDA_GVDB_COPYDATA_PTX);
+    if( !file.good() ){ std::cerr << "ERROR: Unable to find file " << CUDA_GVDB_COPYDATA_PTX << std::endl; exit(1);}
 	cudaCheck ( cuModuleLoad ( &cuAllocatorModule, CUDA_GVDB_COPYDATA_PTX ), "Allocator", "Allocator", "cuModuleLoad", CUDA_GVDB_COPYDATA_PTX, mbDebug);
 		
 	cudaCheck ( cuModuleGetFunction ( &cuFillTex,		cuAllocatorModule, "kernelFillTex" ), "Allocator", "Allocator", "cuModuleGetFunction", "cuFillTex",  mbDebug);
