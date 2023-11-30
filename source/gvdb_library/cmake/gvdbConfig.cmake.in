@@ -1,0 +1,6 @@
+# configure the gvdbConfig.cmake.in file
+configure_file(
+  "${PROJECT_SOURCE_DIR}/cmake/gvdbConfig.cmake.in"
+  "${PROJECT_BINARY_DIR}/gvdbConfig.cmake"
+  @ONLY
+)
