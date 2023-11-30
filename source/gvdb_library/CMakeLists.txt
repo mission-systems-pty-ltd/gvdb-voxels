@@ -70,6 +70,7 @@ target_include_directories(gvdbPTX
 file(WRITE "${CMAKE_CURRENT_LIST_DIR}/dummy.cpp" "")
 
 add_library(gvdb SHARED "${CMAKE_CURRENT_LIST_DIR}/dummy.cpp")
+set_target_properties(gvdb PROPERTIES CUDA_RUNTIME_LIBRARY Shared)
 
 # Add sources - this tells our compiler which files to build, as well as which
 # files to show in IDEs.
