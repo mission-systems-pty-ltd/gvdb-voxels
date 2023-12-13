@@ -233,6 +233,7 @@ void VolumeGVDB::LoadFunction ( int fid, std::string func, int mid, std::string 
 		gprintf ( "ERROR: LoadFunction, cannot find file: %s\n", ptx.c_str() );
 		gerror ();
 	}
+    fclose ( fp );
 
 	char cptx[512];		strcpy ( cptx, ptx.c_str() );
 	char cfn[512];		strcpy ( cfn, func.c_str() );
